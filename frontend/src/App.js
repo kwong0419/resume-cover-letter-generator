@@ -1,7 +1,8 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import './App.css'
 import {exportToPDF} from './utils/pdfExport'
 import FormattedDocument from './components/FormattedDocument'
+import ThemeToggle from './components/ThemeToggle'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -51,6 +52,30 @@ function App() {
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark')
+    } else {
+      // Check if user prefers dark mode
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDarkMode(prefersDarkMode)
+    }
+  }, [])
+
+  // Apply theme changes to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
+  }, [isDarkMode])
+
+  // Toggle theme function
+  const toggleTheme = () => {
+    setIsDarkMode((prevMode) => !prevMode)
+  }
 
   // Handle form input changes for resume
   const handlePersonalInfoChange = (e) => {
@@ -255,6 +280,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
         <h1>AI Resume & Cover Letter Generator</h1>
         <div className="tabs">
           <button className={activeTab === 'resume' ? 'active' : ''} onClick={() => setActiveTab('resume')}>
