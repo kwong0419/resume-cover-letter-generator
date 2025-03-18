@@ -2,6 +2,9 @@ const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
 const {GoogleGenerativeAI} = require('@google/generative-ai')
+const natural = require('natural')
+const {removeStopwords} = require('stopword')
+const tokenizer = new natural.WordTokenizer()
 
 dotenv.config()
 
@@ -107,6 +110,255 @@ app.post('/api/generate-cover-letter', async (req, res) => {
     res.status(500).json({error: 'Failed to generate cover letter'})
   }
 })
+
+// API endpoint to analyze job description and compare with resume
+app.post('/api/analyze-job', async (req, res) => {
+  try {
+    const {resumeData, jobDescription} = req.body
+
+    // Extract keywords from job description
+    const jobKeywords = extractKeywords(jobDescription)
+
+    // Extract keywords from resume
+    const resumeText = generateResumeText(resumeData)
+    const resumeKeywords = extractKeywords(resumeText)
+
+    // Find matching and missing keywords
+    const {matchingKeywords, missingKeywords} = compareKeywords(resumeKeywords, jobKeywords)
+
+    // Calculate ATS score (percentage of job keywords found in resume)
+    const atsScore = calculateATSScore(matchingKeywords, jobKeywords)
+
+    // Generate suggestions for improvement
+    const suggestions = generateSuggestions(missingKeywords, resumeData)
+
+    res.json({
+      atsScore,
+      matchingKeywords,
+      missingKeywords,
+      suggestions,
+    })
+  } catch (error) {
+    console.error('Error analyzing job description:', error)
+    res.status(500).json({error: 'Failed to analyze job description'})
+  }
+})
+
+// API endpoint to optimize resume based on job description
+app.post('/api/optimize-resume', async (req, res) => {
+  try {
+    const {resumeData, jobDescription} = req.body
+
+    // Create a prompt for Gemini to optimize the resume
+    const prompt = `I have a resume and a job description. Please optimize the resume to better match the job description by naturally incorporating relevant keywords.
+    
+    Resume Data:
+    ${JSON.stringify(resumeData)}
+    
+    Job Description:
+    ${jobDescription}
+    
+    Please return an optimized version of the resume data with the following improvements:
+    1. Enhanced bullet points in work experience that incorporate relevant keywords
+    2. Improved skills section that highlights job-relevant skills
+    3. A tailored professional summary that addresses the job requirements
+    
+    Return the result as a JSON object with the same structure as the original resumeData.`
+
+    // Get the generative model
+    const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
+
+    // Generate optimized resume
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text()
+
+    // Clean the response text by removing Markdown code block syntax
+    let cleanedText = text
+      .replace(/```json/g, '') // Remove opening ```json
+      .replace(/```/g, '') // Remove closing ```
+      .trim() // Remove leading/trailing whitespace
+
+    // Parse the cleaned text as JSON
+    const optimizedResumeData = JSON.parse(cleanedText)
+
+    res.json({optimizedResumeData})
+  } catch (error) {
+    console.error('Error optimizing resume:', error)
+    res.status(500).json({error: 'Failed to optimize resume'})
+  }
+})
+
+// API endpoint to generate ATS-optimized cover letter
+app.post('/api/generate-optimized-cover-letter', async (req, res) => {
+  try {
+    const {personalInfo, jobTitle, company, skills, additionalInfo, jobDescription} = req.body
+
+    // Create a prompt for Gemini with ATS optimization instructions
+    const prompt = `Generate an ATS-optimized cover letter for ${
+      personalInfo.name
+    } applying for the position of ${jobTitle} at ${company}.
+    
+    Personal Information: ${JSON.stringify(personalInfo)}
+    Key Skills: ${JSON.stringify(skills)}
+    Additional Information: ${additionalInfo}
+    
+    Job Description:
+    ${jobDescription}
+    
+    IMPORTANT INSTRUCTIONS:
+    1. Create a professional cover letter that naturally incorporates keywords from the job description
+    2. Highlight the applicant's relevant skills that match the job requirements
+    3. Use a standard business letter format but leave the date as "[DATE]"
+    4. Include placeholders like "[HIRING MANAGER'S NAME]" where appropriate
+    5. Keep line lengths reasonable (60-80 characters per line)
+    6. Use blank lines between paragraphs for clear separation
+    7. Avoid special characters or complex formatting
+    8. Do not use markdown, HTML tags, or any special formatting
+    9. Ensure the letter demonstrates understanding of the company and role
+    10. Use a professional tone and language`
+
+    // Get the generative model
+    const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
+
+    // Generate content
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text()
+
+    res.json({coverLetter: text})
+  } catch (error) {
+    console.error('Error generating optimized cover letter:', error)
+    res.status(500).json({error: 'Failed to generate optimized cover letter'})
+  }
+})
+
+// Helper functions for keyword extraction and analysis
+function extractKeywords(text) {
+  if (!text) return []
+
+  // Tokenize and convert to lowercase
+  const tokens = tokenizer.tokenize(text.toLowerCase())
+
+  // Remove stopwords
+  const filteredTokens = removeStopwords(tokens)
+
+  // Count frequency of each keyword
+  const keywordFrequency = {}
+  filteredTokens.forEach((token) => {
+    if (token.length > 2) {
+      // Ignore very short words
+      keywordFrequency[token] = (keywordFrequency[token] || 0) + 1
+    }
+  })
+
+  // Convert to array of objects with keyword and frequency
+  const keywords = Object.entries(keywordFrequency).map(([keyword, frequency]) => ({
+    keyword,
+    frequency,
+  }))
+
+  // Sort by frequency (descending)
+  return keywords.sort((a, b) => b.frequency - a.frequency)
+}
+
+function compareKeywords(resumeKeywords, jobKeywords) {
+  const resumeKeywordSet = new Set(resumeKeywords.map((k) => k.keyword))
+  const jobKeywordSet = new Set(jobKeywords.map((k) => k.keyword))
+
+  // Find matching keywords
+  const matchingKeywords = jobKeywords.filter((k) => resumeKeywordSet.has(k.keyword))
+
+  // Find missing keywords
+  const missingKeywords = jobKeywords.filter((k) => !resumeKeywordSet.has(k.keyword))
+
+  return {matchingKeywords, missingKeywords}
+}
+
+function calculateATSScore(matchingKeywords, jobKeywords) {
+  if (jobKeywords.length === 0) return 100
+
+  // Calculate score as percentage of job keywords found in resume
+  const score = (matchingKeywords.length / jobKeywords.length) * 100
+  return Math.round(score)
+}
+
+function generateResumeText(resumeData) {
+  // Combine all text from resume data into a single string
+  let text = ''
+
+  // Add personal info
+  const {personalInfo} = resumeData
+  text += `${personalInfo.name} ${personalInfo.email} ${personalInfo.phone} ${personalInfo.address} ${personalInfo.linkedin} `
+
+  // Add work experience
+  resumeData.workExperience.forEach((exp) => {
+    text += `${exp.company} ${exp.position} ${exp.description} `
+  })
+
+  // Add education
+  resumeData.education.forEach((edu) => {
+    text += `${edu.institution} ${edu.degree} ${edu.field} `
+  })
+
+  // Add skills and achievements
+  text += resumeData.skills.join(' ') + ' '
+  text += resumeData.achievements.join(' ')
+
+  return text
+}
+
+function generateSuggestions(missingKeywords, resumeData) {
+  // Generate suggestions for incorporating missing keywords
+  const suggestions = []
+
+  if (missingKeywords.length > 0) {
+    suggestions.push({
+      type: 'general',
+      text: 'Consider adding these missing keywords to your resume to improve ATS score:',
+    })
+
+    // Group keywords by importance (frequency)
+    const highPriority = missingKeywords.filter((k) => k.frequency > 3).slice(0, 5)
+    const mediumPriority = missingKeywords.filter((k) => k.frequency > 1 && k.frequency <= 3).slice(0, 5)
+
+    if (highPriority.length > 0) {
+      suggestions.push({
+        type: 'high_priority',
+        text: 'High priority keywords:',
+        keywords: highPriority.map((k) => k.keyword),
+      })
+    }
+
+    if (mediumPriority.length > 0) {
+      suggestions.push({
+        type: 'medium_priority',
+        text: 'Medium priority keywords:',
+        keywords: mediumPriority.map((k) => k.keyword),
+      })
+    }
+
+    // Specific section suggestions
+    suggestions.push({
+      type: 'skills',
+      text: 'Consider adding these skills to your skills section:',
+      keywords: missingKeywords.slice(0, 7).map((k) => k.keyword),
+    })
+
+    suggestions.push({
+      type: 'experience',
+      text: 'Try to incorporate these keywords in your work experience descriptions:',
+      keywords: missingKeywords.slice(0, 5).map((k) => k.keyword),
+    })
+  } else {
+    suggestions.push({
+      type: 'general',
+      text: 'Great job! Your resume already contains all the important keywords from the job description.',
+    })
+  }
+
+  return suggestions
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

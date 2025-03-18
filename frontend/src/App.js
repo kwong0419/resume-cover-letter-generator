@@ -3,6 +3,7 @@ import './App.css'
 import {exportToPDF} from './utils/pdfExport'
 import FormattedDocument from './components/FormattedDocument'
 import ThemeToggle from './components/ThemeToggle'
+import JobAnalyzer from './components/JobAnalyzer'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -279,14 +280,17 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+      <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+      <header>
         <h1>AI Resume & Cover Letter Generator</h1>
         <div className="tabs">
           <button className={activeTab === 'resume' ? 'active' : ''} onClick={() => setActiveTab('resume')}>
             Resume Generator
           </button>
-          <button className={activeTab === 'coverLetter' ? 'active' : ''} onClick={() => setActiveTab('coverLetter')}>
+          <button className={activeTab === 'ats' ? 'active' : ''} onClick={() => setActiveTab('ats')}>
+            ATS Optimization
+          </button>
+          <button className={activeTab === 'cover-letter' ? 'active' : ''} onClick={() => setActiveTab('cover-letter')}>
             Cover Letter Generator
           </button>
         </div>
@@ -503,6 +507,8 @@ function App() {
               </div>
             )}
           </div>
+        ) : activeTab === 'ats' ? (
+          <JobAnalyzer formData={formData} setFormData={setFormData} setGeneratedResume={setGeneratedResume} />
         ) : (
           <div className="cover-letter-section">
             <div className="form-container">
@@ -587,6 +593,18 @@ function App() {
                     value={coverLetterData.additionalInfo}
                     onChange={handleCoverLetterChange}
                     placeholder="Any additional information you want to include in your cover letter"
+                  />
+                </div>
+
+                <h3>Job Description</h3>
+                <div className="form-group">
+                  <label>Job Description (for ATS optimization)</label>
+                  <textarea
+                    name="jobDescription"
+                    value={coverLetterData.jobDescription || ''}
+                    onChange={handleCoverLetterChange}
+                    placeholder="Paste the job description here for ATS-optimized cover letter"
+                    rows={6}
                   />
                 </div>
 
