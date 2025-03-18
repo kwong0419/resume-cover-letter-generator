@@ -1,0 +1,86 @@
+.formatted-document {
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.5;
+  color: #333;
+  background-color: white;
+  padding: 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  overflow-y: auto;
+  height: 100%;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.document-heading {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.document-subheading {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  color: #34495e;
+}
+
+.document-bullet {
+  padding-left: 20px;
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.document-text {
+  margin-bottom: 5px;
+}
+
+.document-blank-line {
+  height: 1em;
+}
+
+.resume-document {
+  font-size: 12px;
+}
+
+.cover-letter-document {
+  font-size: 12px;
+}
+
+/* Add a "Copy to Clipboard" button style */
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.copy-button:hover {
+  opacity: 1;
+}
+
+@media print {
+  .formatted-document {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+
+  .copy-button {
+    display: none;
+  }
+}

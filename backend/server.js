@@ -20,7 +20,7 @@ app.post('/api/generate-resume', async (req, res) => {
   try {
     const {personalInfo, workExperience, education, skills, achievements} = req.body
 
-    // Create a prompt for Gemini
+    // Create a prompt for Gemini with better formatting instructions
     const prompt = `Generate a professional resume for ${personalInfo.name} with the following information:
     
     Personal Information:
@@ -38,9 +38,19 @@ app.post('/api/generate-resume', async (req, res) => {
     Achievements:
     ${JSON.stringify(achievements)}
     
-    Format the resume in a clean, professional style with appropriate sections.`
+    IMPORTANT FORMATTING INSTRUCTIONS:
+    1. Create a clean, professional resume with standard sections
+    2. Use a simple, consistent format that would work well in Microsoft Word
+    3. Keep line lengths reasonable (60-80 characters per line)
+    4. Use blank lines between sections for clear separation
+    5. Avoid special characters or complex formatting
+    6. Do not use markdown, HTML tags, or any special formatting
+    7. Format dates and locations consistently
+    8. Use simple bullet points (• or - ) for listing items
+    9. Keep the overall width narrow enough to fit on a standard page
+    10. Ensure consistent spacing throughout the document`
 
-    // Get the generative model - using the correct model name
+    // Get the generative model
     const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
 
     // Generate content
@@ -60,8 +70,8 @@ app.post('/api/generate-cover-letter', async (req, res) => {
   try {
     const {personalInfo, jobTitle, company, skills, additionalInfo} = req.body
 
-    // Create a prompt for Gemini
-    const prompt = `Generate a professional cover letter for ${
+    // Create a prompt for Gemini with template instructions
+    const prompt = `Generate a professional cover letter template for ${
       personalInfo.name
     } applying for the position of ${jobTitle} at ${company}. 
     
@@ -70,9 +80,20 @@ app.post('/api/generate-cover-letter', async (req, res) => {
     Key Skills: ${JSON.stringify(skills)}
     Additional Information: ${additionalInfo}
     
-    Format the cover letter in a professional style with appropriate greeting, body paragraphs, and closing.`
+    IMPORTANT FORMATTING INSTRUCTIONS:
+    1. Create a standard business letter format but leave the date as "[DATE]" for the user to fill in
+    2. Include placeholders like "[HIRING MANAGER'S NAME]" where appropriate
+    3. Use a simple, consistent format that would work well in Microsoft Word
+    4. Keep line lengths reasonable (60-80 characters per line)
+    5. Use blank lines between paragraphs for clear separation
+    6. Avoid special characters or complex formatting
+    7. Do not use markdown, HTML tags, or any special formatting
+    8. Keep the overall width narrow enough to fit on a standard page
+    9. Ensure consistent spacing throughout the document
+    10. Use a professional tone and language
+    11. Include a proper salutation and closing`
 
-    // Get the generative model - using the correct model name
+    // Get the generative model
     const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
 
     // Generate content

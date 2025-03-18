@@ -1,5 +1,7 @@
 import React, {useState} from 'react'
 import './App.css'
+import {exportToPDF} from './utils/pdfExport'
+import FormattedDocument from './components/FormattedDocument'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -222,6 +224,34 @@ function App() {
     }
   }
 
+  // Add a function to copy content to clipboard
+  const copyToClipboard = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert('Content copied to clipboard!')
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err)
+        setError('Failed to copy to clipboard')
+      })
+  }
+
+  // Handle PDF export for resume
+  const handleResumeExport = () => {
+    exportToPDF('resume-content', `${formData.personalInfo.name.replace(/\s+/g, '_')}_Resume`, setIsLoading, setError)
+  }
+
+  // Handle PDF export for cover letter
+  const handleCoverLetterExport = () => {
+    exportToPDF(
+      'cover-letter-content',
+      `${coverLetterData.personalInfo.name.replace(/\s+/g, '_')}_Cover_Letter`,
+      setIsLoading,
+      setError,
+    )
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -426,9 +456,23 @@ function App() {
 
             {generatedResume && (
               <div className="result-container">
-                <h2>Generated Resume</h2>
-                <div className="generated-content">
-                  <pre>{generatedResume}</pre>
+                <div className="result-header">
+                  <h2>Generated Resume</h2>
+                  <div className="button-group">
+                    <button
+                      className="action-btn copy-btn"
+                      onClick={() => copyToClipboard(generatedResume)}
+                      disabled={isLoading}
+                    >
+                      Copy to Clipboard
+                    </button>
+                    <button className="action-btn export-btn" onClick={handleResumeExport} disabled={isLoading}>
+                      {isLoading ? 'Exporting...' : 'Export as PDF'}
+                    </button>
+                  </div>
+                </div>
+                <div id="resume-content">
+                  <FormattedDocument content={generatedResume} type="resume" />
                 </div>
               </div>
             )}
@@ -528,9 +572,23 @@ function App() {
 
             {generatedCoverLetter && (
               <div className="result-container">
-                <h2>Generated Cover Letter</h2>
-                <div className="generated-content">
-                  <pre>{generatedCoverLetter}</pre>
+                <div className="result-header">
+                  <h2>Generated Cover Letter</h2>
+                  <div className="button-group">
+                    <button
+                      className="action-btn copy-btn"
+                      onClick={() => copyToClipboard(generatedCoverLetter)}
+                      disabled={isLoading}
+                    >
+                      Copy to Clipboard
+                    </button>
+                    <button className="action-btn export-btn" onClick={handleCoverLetterExport} disabled={isLoading}>
+                      {isLoading ? 'Exporting...' : 'Export as PDF'}
+                    </button>
+                  </div>
+                </div>
+                <div id="cover-letter-content">
+                  <FormattedDocument content={generatedCoverLetter} type="cover-letter" />
                 </div>
               </div>
             )}
