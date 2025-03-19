@@ -18,6 +18,8 @@ const PORT = process.env.PORT || 5000
 // Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
+const MUSE_API_KEY = process.env.MUSE_API_KEY
+
 // API endpoint to generate resume
 app.post('/api/generate-resume', async (req, res) => {
   try {
@@ -230,6 +232,45 @@ app.post('/api/generate-optimized-cover-letter', async (req, res) => {
   } catch (error) {
     console.error('Error generating optimized cover letter:', error)
     res.status(500).json({error: 'Failed to generate optimized cover letter'})
+  }
+})
+
+// API endpoint to fetch jobs from The Muse API
+app.get('/api/muse-jobs', async (req, res) => {
+  try {
+    const {location, jobTitle} = req.query
+    const url = `https://www.themuse.com/api/public/jobs?api_key=${MUSE_API_KEY}&location=${location}&page=1`
+
+    const response = await fetch(url)
+    const data = await response.json()
+    res.json(data.results) // Return the job listings
+  } catch (error) {
+    console.error('Error fetching jobs from The Muse API:', error)
+    res.status(500).json({error: 'Failed to fetch job listings'})
+  }
+})
+
+// API endpoint to fetch job listings from The Muse
+app.get('/api/job-listings', async (req, res) => {
+  try {
+    const {page = 1, location, category} = req.query
+    const url = `https://www.themuse.com/api/public/jobs?page=${page}&location=${location}&category=${category}`
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${MUSE_API_KEY}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch job listings')
+    }
+
+    const data = await response.json()
+    res.json(data.results)
+  } catch (error) {
+    console.error('Error fetching job listings:', error)
+    res.status(500).json({error: 'Failed to fetch job listings'})
   }
 })
 

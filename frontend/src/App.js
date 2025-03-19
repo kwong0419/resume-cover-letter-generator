@@ -4,6 +4,7 @@ import {exportToPDF} from './utils/pdfExport'
 import FormattedDocument from './components/FormattedDocument'
 import ThemeToggle from './components/ThemeToggle'
 import JobAnalyzer from './components/JobAnalyzer'
+import JobMatcher from './components/JobMatcher'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -278,6 +279,11 @@ function App() {
     )
   }
 
+  const userProfile = {
+    skills: ['JavaScript', 'React', 'Node.js', 'Python'],
+    // Add other user profile data here
+  }
+
   return (
     <div className="App">
       <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
@@ -299,7 +305,7 @@ function App() {
       <main>
         {error && <div className="error">{error}</div>}
 
-        {activeTab === 'resume' ? (
+        {activeTab === 'resume' && (
           <div className="resume-section">
             <div className="form-container">
               <h2>Resume Information</h2>
@@ -507,9 +513,15 @@ function App() {
               </div>
             )}
           </div>
-        ) : activeTab === 'ats' ? (
-          <JobAnalyzer formData={formData} setFormData={setFormData} setGeneratedResume={setGeneratedResume} />
-        ) : (
+        )}
+
+        {activeTab === 'ats' && (
+          <div className="ats-section">
+            <JobAnalyzer formData={formData} setFormData={setFormData} setGeneratedResume={setGeneratedResume} />
+          </div>
+        )}
+
+        {activeTab === 'cover-letter' && (
           <div className="cover-letter-section">
             <div className="form-container">
               <h2>Cover Letter Information</h2>
@@ -639,6 +651,10 @@ function App() {
           </div>
         )}
       </main>
+
+      <footer>
+        <JobMatcher userProfile={userProfile} />
+      </footer>
     </div>
   )
 }

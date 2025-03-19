@@ -4,8 +4,12 @@
   margin: 0 auto;
   padding: 20px;
   box-sizing: border-box;
+  background-color: var(--background-color);
   color: var(--text-color);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .App-logo {
@@ -22,11 +26,10 @@
 .App-header {
   text-align: center;
   margin-bottom: 30px;
-  position: relative;
 }
 
 .App-header h1 {
-  color: var(--heading-color);
+  color: #2c3e50;
   margin-bottom: 20px;
 }
 
@@ -37,13 +40,12 @@
 }
 
 .tabs button {
-  background-color: var(--form-background);
-  border: 1px solid var(--border-color);
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s;
-  color: var(--text-color);
 }
 
 .tabs button:first-child {
@@ -55,38 +57,39 @@
 }
 
 .tabs button.active {
-  background-color: var(--button-primary);
+  background-color: #4285f4;
   color: white;
-  border-color: var(--button-primary);
+  border-color: #4285f4;
 }
 
 .resume-section,
 .cover-letter-section {
+  width: 100%;
   display: flex;
-  gap: 30px;
-  height: calc(100vh - 150px);
-  min-height: 600px;
+  flex-direction: column;
 }
 
 .form-container {
-  flex: 1;
-  background-color: var(--form-background);
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  background-color: #f8f9fa;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px var(--shadow-color);
-  overflow-y: auto;
-  max-height: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .result-container {
-  flex: 1;
+  width: 100%;
+  max-height: 800px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  background-color: var(--form-background);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px var(--shadow-color);
-  max-height: 100%;
+  background-color: #f8f9fa;
 }
 
 .result-header {
@@ -98,7 +101,6 @@
 
 .result-header h2 {
   margin: 0;
-  color: var(--heading-color);
 }
 
 .button-group {
@@ -115,12 +117,12 @@
 }
 
 .copy-btn {
-  background-color: var(--button-success);
+  background-color: #34a853;
   color: white;
 }
 
 .export-btn {
-  background-color: var(--button-danger);
+  background-color: #ea4335;
   color: white;
 }
 
@@ -130,14 +132,14 @@
 }
 
 .generated-content {
-  background-color: var(--card-background);
+  background-color: white;
   padding: 20px;
   border-radius: 5px;
   white-space: pre-wrap;
   line-height: 1.6;
   overflow-y: auto;
   flex-grow: 1;
-  box-shadow: 0 1px 3px var(--shadow-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -148,19 +150,16 @@ label {
   display: block;
   margin-bottom: 5px;
   font-weight: 500;
-  color: var(--text-color);
 }
 
 input,
 textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
-  background-color: var(--card-background);
-  color: var(--text-color);
 }
 
 textarea {
@@ -170,15 +169,15 @@ textarea {
 
 .experience-item,
 .education-item {
-  background-color: var(--card-background);
+  background-color: #fff;
   padding: 15px;
   border-radius: 5px;
   margin-bottom: 15px;
-  box-shadow: 0 1px 3px var(--shadow-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .add-btn {
-  background-color: var(--button-success);
+  background-color: #34a853;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -189,7 +188,7 @@ textarea {
 }
 
 .generate-btn {
-  background-color: var(--button-primary);
+  background-color: #4285f4;
   color: white;
   border: none;
   padding: 12px 20px;
@@ -212,7 +211,7 @@ textarea {
 h2,
 h3,
 h4 {
-  color: var(--heading-color);
+  color: #2c3e50;
 }
 
 h2 {
@@ -223,37 +222,13 @@ h2 {
 h3 {
   margin-top: 25px;
   margin-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #eee;
   padding-bottom: 8px;
 }
 
 h4 {
   margin-top: 0;
   margin-bottom: 15px;
-}
-
-/* Theme toggle styles */
-.theme-toggle {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 100;
-}
-
-.theme-toggle-button {
-  background-color: var(--form-background);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-color);
-}
-
-.theme-toggle-button svg {
-  margin-right: 5px;
 }
 
 @media (max-width: 768px) {
@@ -281,4 +256,55 @@ h4 {
   to {
     transform: rotate(360deg);
   }
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+  overflow: visible;
+}
+
+.content-container {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.job-matcher-section {
+  width: 100%;
+  padding: 20px;
+  margin-top: 40px;
+  border-top: 2px solid #ccc;
+  clear: both;
+}
+
+@media (min-width: 992px) {
+  .resume-section,
+  .cover-letter-section {
+    flex-direction: row;
+    gap: 30px;
+  }
+
+  .form-container,
+  .result-container {
+    width: 48%;
+    margin-top: 0;
+  }
+
+  .result-container {
+    align-self: flex-start;
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.form-group input,
+.form-group textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#resume-content,
+#cover-letter-content {
+  width: 100%;
+  overflow-wrap: break-word;
 }
