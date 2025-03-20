@@ -5,6 +5,7 @@ import FormattedDocument from './components/FormattedDocument'
 import ThemeToggle from './components/ThemeToggle'
 import JobAnalyzer from './components/JobAnalyzer'
 import JobMatcher from './components/JobMatcher'
+import HRAgent from './components/HRAgent'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -279,11 +280,6 @@ function App() {
     )
   }
 
-  const userProfile = {
-    skills: ['JavaScript', 'React', 'Node.js', 'Python'],
-    // Add other user profile data here
-  }
-
   return (
     <div className="App">
       <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
@@ -298,6 +294,12 @@ function App() {
           </button>
           <button className={activeTab === 'cover-letter' ? 'active' : ''} onClick={() => setActiveTab('cover-letter')}>
             Cover Letter Generator
+          </button>
+          <button className={activeTab === 'hr-agent' ? 'active' : ''} onClick={() => setActiveTab('hr-agent')}>
+            HR Agent
+          </button>
+          <button className={activeTab === 'job-matcher' ? 'active' : ''} onClick={() => setActiveTab('job-matcher')}>
+            Job Matcher
           </button>
         </div>
       </header>
@@ -650,11 +652,19 @@ function App() {
             )}
           </div>
         )}
-      </main>
 
-      <footer>
-        <JobMatcher userProfile={userProfile} />
-      </footer>
+        {activeTab === 'hr-agent' && (
+          <div className="hr-agent-section">
+            <HRAgent formData={formData} generatedResume={generatedResume} />
+          </div>
+        )}
+
+        {activeTab === 'job-matcher' && (
+          <div className="job-matcher-section">
+            <JobMatcher userProfile={formData} />
+          </div>
+        )}
+      </main>
     </div>
   )
 }

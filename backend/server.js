@@ -10,7 +10,10 @@ dotenv.config()
 
 const app = express()
 app.use(cors())
-app.use(express.json())
+
+// Increase the payload size limit (50mb should be more than enough)
+app.use(express.json({limit: '50mb'}))
+app.use(express.urlencoded({extended: true, limit: '50mb'}))
 
 // Define port
 const PORT = process.env.PORT || 5000
@@ -235,42 +238,196 @@ app.post('/api/generate-optimized-cover-letter', async (req, res) => {
   }
 })
 
-// API endpoint to fetch jobs from The Muse API
+// API endpoint to fetch and analyze jobs from The Muse
 app.get('/api/muse-jobs', async (req, res) => {
   try {
-    const {location, jobTitle} = req.query
-    const url = `https://www.themuse.com/api/public/jobs?api_key=${MUSE_API_KEY}&location=${location}&page=1`
+    const {page = 1, category, location} = req.query
+
+    const params = new URLSearchParams({
+      page: page.toString(),
+      api_key: process.env.MUSE_API_KEY,
+    })
+
+    if (category) params.append('category', category)
+    if (location) params.append('location', location)
+
+    const url = `https://www.themuse.com/api/public/jobs?api_key=${MUSE_API_KEY}&${params}`
+
+    console.log('Requesting Muse API:', url)
 
     const response = await fetch(url)
     const data = await response.json()
-    res.json(data.results) // Return the job listings
+
+    if (!response.ok) {
+      console.error('Muse API Error:', data)
+      throw new Error(data.error || 'Failed to fetch jobs')
+    }
+
+    res.json({
+      jobs: data.results || [],
+      page: data.page || 1,
+      pageCount: data.page_count || 0,
+    })
   } catch (error) {
-    console.error('Error fetching jobs from The Muse API:', error)
-    res.status(500).json({error: 'Failed to fetch job listings'})
+    console.error('Error fetching jobs:', error)
+    res.status(500).json({error: error.message || 'Failed to fetch jobs'})
   }
 })
 
-// API endpoint to fetch job listings from The Muse
-app.get('/api/job-listings', async (req, res) => {
+// New endpoint to fetch available locations
+app.get('/api/muse-locations', async (req, res) => {
   try {
-    const {page = 1, location, category} = req.query
-    const url = `https://www.themuse.com/api/public/jobs?page=${page}&location=${location}&category=${category}`
+    // Make a sample job request to get available locations
+    const response = await fetch(`https://www.themuse.com/api/public/jobs?api_key=${process.env.MUSE_API_KEY}&page=1`)
+    const data = await response.json()
 
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${MUSE_API_KEY}`,
-      },
-    })
+    // Extract unique locations from the results
+    const locations = [...new Set(data.results.flatMap((job) => job.locations).map((loc) => loc.name))].sort()
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch job listings')
+    res.json({locations})
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+    res.status(500).json({error: 'Failed to fetch locations'})
+  }
+})
+
+// HR Agent Feedback endpoint
+app.post('/api/hr-agent-feedback', async (req, res) => {
+  try {
+    const {resumeData, generatedResume, jobDescription} = req.body
+
+    // Create a prompt for the AI to act as an HR agent
+    const prompt = `You are an experienced HR professional and recruiter with 15+ years of experience. 
+    You are reviewing the following resume${jobDescription ? ' for a specific job' : ''}:
+    
+    ${generatedResume}
+    
+    ${jobDescription ? `The job description is: ${jobDescription}` : ''}
+    
+    Please provide detailed, professional feedback on this resume as if you were reviewing it for a hiring decision. 
+    Your feedback should be constructive, specific, and actionable.
+    
+    Return your feedback in the following JSON format:
+    {
+      "overallRating": [a number from 1-5, with 5 being excellent],
+      "strengths": [an array of 3-5 specific strengths of the resume],
+      "areasForImprovement": [an array of 3-5 specific areas that need improvement],
+      "detailedFeedback": [
+        {
+          "section": "Format and Layout",
+          "feedback": "detailed feedback about the resume's format and layout"
+        },
+        {
+          "section": "Content and Language",
+          "feedback": "detailed feedback about the content quality and language used"
+        },
+        {
+          "section": "Skills Presentation",
+          "feedback": "detailed feedback about how skills are presented"
+        },
+        {
+          "section": "Experience Description",
+          "feedback": "detailed feedback about how work experience is described"
+        },
+        {
+          "section": "Education and Qualifications",
+          "feedback": "detailed feedback about education and qualifications"
+        }${
+          jobDescription
+            ? `,
+        {
+          "section": "Job Fit",
+          "feedback": "detailed feedback about how well the resume matches the job description"
+        }`
+            : ''
+        }
+      ]
+    }
+    
+    Ensure your feedback is specific, actionable, and professional. Focus on both strengths and areas for improvement.`
+
+    // Get the generative model
+    const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
+
+    // Generate content
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text()
+
+    // Parse the JSON response
+    let feedback
+    try {
+      feedback = JSON.parse(text)
+    } catch (error) {
+      console.error('Error parsing JSON from AI response:', error)
+      // If parsing fails, try to extract JSON using regex
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        feedback = JSON.parse(jsonMatch[0])
+      } else {
+        throw new Error('Could not parse HR agent feedback')
+      }
     }
 
-    const data = await response.json()
-    res.json(data.results)
+    res.json({feedback})
   } catch (error) {
-    console.error('Error fetching job listings:', error)
-    res.status(500).json({error: 'Failed to fetch job listings'})
+    console.error('Error generating HR agent feedback:', error)
+    res.status(500).json({error: 'Failed to generate HR agent feedback'})
+  }
+})
+
+// Improve Resume endpoint
+app.post('/api/improve-resume', async (req, res) => {
+  try {
+    const {resumeData, generatedResume, jobDescription, feedback} = req.body
+
+    // Create a prompt for the AI to improve the resume based on feedback
+    const prompt = `You are an expert resume writer with 15+ years of experience. 
+    You have been given a resume and feedback from an HR professional. 
+    Your task is to improve the resume based on this feedback.
+    
+    Original Resume:
+    ${generatedResume}
+    
+    HR Feedback:
+    ${JSON.stringify(feedback)}
+    
+    ${
+      jobDescription
+        ? `Job Description:
+    ${jobDescription}`
+        : ''
+    }
+    
+    Please rewrite the resume to address all the feedback points while maintaining the person's actual experience and qualifications. 
+    Make the resume more impactful, professional, and targeted${jobDescription ? ' to the job description' : ''}.
+    
+    IMPORTANT FORMATTING INSTRUCTIONS:
+    1. Create a clean, professional resume with standard sections
+    2. Use a simple, consistent format that would work well in Microsoft Word
+    3. Keep line lengths reasonable (60-80 characters per line)
+    4. Use blank lines between sections for clear separation
+    5. Avoid special characters or complex formatting
+    6. Do not use markdown, HTML tags, or any special formatting
+    7. Format dates and locations consistently
+    8. Use simple bullet points (• or - ) for listing items
+    9. Keep the overall width narrow enough to fit on a standard page
+    10. Ensure consistent spacing throughout the document
+    
+    Return ONLY the improved resume without any additional explanations or comments.`
+
+    // Get the generative model
+    const model = genAI.getGenerativeModel({model: 'gemini-1.5-pro'})
+
+    // Generate content
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const improvedResume = response.text()
+
+    res.json({improvedResume})
+  } catch (error) {
+    console.error('Error improving resume:', error)
+    res.status(500).json({error: 'Failed to improve resume'})
   }
 })
 
