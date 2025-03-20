@@ -284,7 +284,7 @@ function App() {
     <div className="App">
       <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       <header>
-        <h1>AI Resume & Cover Letter Generator</h1>
+        <h1 className="app-title">AI Resume & Cover Letter Generator</h1>
         <div className="tabs">
           <button className={activeTab === 'resume' ? 'active' : ''} onClick={() => setActiveTab('resume')}>
             Resume Generator
