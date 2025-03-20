@@ -13,6 +13,9 @@ body {
 :root {
   --background-color: #ffffff;
   --text-color: #333333;
+  --text-primary: #2c3e50;
+  --text-secondary: #666666;
+  --text-muted: #888888;
   --form-background: #f8f9fa;
   --card-background: #ffffff;
   --border-color: #dee2e6;
@@ -20,20 +23,33 @@ body {
   --button-primary: #4285f4;
   --button-success: #34a853;
   --button-danger: #ea4335;
+  --button-disabled: #cccccc;
   --shadow-color: rgba(0, 0, 0, 0.1);
+  --error-color: #dc3545;
+  --error-background: #f8d7da;
+  --form-text: #2c3e50;
+  --form-label: #495057;
 }
 
 [data-theme='dark'] {
   --background-color: #121212;
   --text-color: #e0e0e0;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
   --form-background: #1e1e1e;
   --card-background: #2d2d2d;
   --border-color: #444444;
-  --heading-color: #90caf9;
+  --heading-color: #e0e0e0;
   --button-primary: #5c9ce6;
   --button-success: #4caf50;
   --button-danger: #f44336;
+  --button-disabled: #555555;
   --shadow-color: rgba(0, 0, 0, 0.3);
+  --error-color: #ff6b6b;
+  --error-background: #2c1c1e;
+  --form-text: #e0e0e0;
+  --form-label: #b0b0b0;
 }
 
 code {

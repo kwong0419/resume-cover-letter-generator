@@ -2,7 +2,7 @@
   font-family: 'Times New Roman', Times, serif;
   line-height: 1.5;
   color: var(--text-color);
-  background-color: var(--card-background);
+  background-color: var(--form-background);
   padding: 30px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -20,7 +20,7 @@
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 10px;
-  color: var(--heading-color);
+  color: var(--text-primary);
 }
 
 .document-subheading {
@@ -28,7 +28,7 @@
   font-weight: bold;
   margin-top: 15px;
   margin-bottom: 8px;
-  color: var(--heading-color);
+  color: var(--text-primary);
 }
 
 .document-bullet {

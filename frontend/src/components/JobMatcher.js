@@ -58,7 +58,6 @@ const MUSE_CATEGORIES = {
   'Software Engineering': 'Software Engineering',
   'Sports, Fitness, and Recreation': 'Sports, Fitness, and Recreation',
   'Transportation and Logistics': 'Transportation and Logistics',
-  Unknown: 'Unknown',
   UX: 'UX',
   Videography: 'Videography',
   Writer: 'Writer',
