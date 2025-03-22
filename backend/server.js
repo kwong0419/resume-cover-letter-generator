@@ -13,7 +13,7 @@ const app = express()
 const corsOptions = {
   origin: [
     'http://localhost:3000',
-    'https://your-netlify-app-name.netlify.app', // Add your Netlify domain
+    'https://ai-resume-generator.netlify.app/', // Add your Netlify domain
   ],
   optionsSuccessStatus: 200,
 }
