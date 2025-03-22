@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import '../styles/HRAgent.css'
-
+import {API_URL} from '../utils/api'
 const HRAgent = ({formData, generatedResume}) => {
   const [feedback, setFeedback] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -19,7 +19,7 @@ const HRAgent = ({formData, generatedResume}) => {
     setFeedback(null)
 
     try {
-      const response = await fetch('http://localhost:5000/api/hr-agent-feedback', {
+      const response = await fetch(`${API_URL}/api/hr-agent-feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ const HRAgent = ({formData, generatedResume}) => {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/improve-resume', {
+      const response = await fetch(`${API_URL}/api/improve-resume`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

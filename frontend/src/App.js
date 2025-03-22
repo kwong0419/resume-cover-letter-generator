@@ -6,6 +6,7 @@ import ThemeToggle from './components/ThemeToggle'
 import JobAnalyzer from './components/JobAnalyzer'
 import JobMatcher from './components/JobMatcher'
 import HRAgent from './components/HRAgent'
+import {API_URL} from './utils/api'
 
 function App() {
   const [activeTab, setActiveTab] = useState('resume')
@@ -201,7 +202,7 @@ function App() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/generate-resume', {
+      const response = await fetch(`${API_URL}/api/generate-resume`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -230,7 +231,7 @@ function App() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/generate-cover-letter', {
+      const response = await fetch(`${API_URL}/api/generate-cover-letter`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

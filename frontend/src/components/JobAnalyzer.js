@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import '../styles/JobAnalyzer.css'
-
+import {API_URL} from '../utils/api'
 const JobAnalyzer = ({formData, setFormData, setGeneratedResume}) => {
   const [jobDescription, setJobDescription] = useState('')
   const [analysisResult, setAnalysisResult] = useState(null)
@@ -19,7 +19,7 @@ const JobAnalyzer = ({formData, setFormData, setGeneratedResume}) => {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/analyze-job', {
+      const response = await fetch(`${API_URL}/api/analyze-job`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ const JobAnalyzer = ({formData, setFormData, setGeneratedResume}) => {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/optimize-resume', {
+      const response = await fetch(`${API_URL}/api/optimize-resume`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const JobAnalyzer = ({formData, setFormData, setGeneratedResume}) => {
         setFormData(data.optimizedResumeData)
 
         // Generate the new resume with the optimized data
-        const resumeResponse = await fetch('http://localhost:5000/api/generate-resume', {
+        const resumeResponse = await fetch(`${API_URL}/api/generate-resume`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

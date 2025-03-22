@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import '../styles/JobMatcher.css'
-
+import {API_URL} from '../utils/api'
 const MUSE_CATEGORIES = {
   Accounting: 'Accounting',
   'Accounting and Finance': 'Accounting and Finance',

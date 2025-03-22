@@ -9,7 +9,16 @@ const tokenizer = new natural.WordTokenizer()
 dotenv.config()
 
 const app = express()
-app.use(cors())
+
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://your-netlify-app-name.netlify.app', // Add your Netlify domain
+  ],
+  optionsSuccessStatus: 200,
+}
+
+app.use(cors(corsOptions))
 
 // Increase the payload size limit (50mb should be more than enough)
 app.use(express.json({limit: '50mb'}))
