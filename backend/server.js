@@ -13,9 +13,11 @@ const app = express()
 const corsOptions = {
   origin: [
     'http://localhost:3000',
-    'https://ai-resume-generator.netlify.app/', // Add your Netlify domain
+    'https://ai-resume-generator.netlify.app',
+    process.env.FRONTEND_URL || 'https://ai-resume-generator.netlify.app', // Add environment variable support
   ],
   optionsSuccessStatus: 200,
+  credentials: true, // Allow credentials
 }
 
 app.use(cors(corsOptions))
