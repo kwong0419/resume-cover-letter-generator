@@ -32,8 +32,6 @@ const PORT = process.env.PORT || 5000
 // Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-const MUSE_API_KEY = process.env.MUSE_API_KEY
-
 // API endpoint to generate resume
 app.post('/api/generate-resume', async (req, res) => {
   try {
@@ -246,59 +244,6 @@ app.post('/api/generate-optimized-cover-letter', async (req, res) => {
   } catch (error) {
     console.error('Error generating optimized cover letter:', error)
     res.status(500).json({error: 'Failed to generate optimized cover letter'})
-  }
-})
-
-// API endpoint to fetch and analyze jobs from The Muse
-app.get('/api/muse-jobs', async (req, res) => {
-  try {
-    const {page = 1, category, location} = req.query
-
-    const params = new URLSearchParams({
-      page: page.toString(),
-      api_key: process.env.MUSE_API_KEY,
-    })
-
-    if (category) params.append('category', category)
-    if (location) params.append('location', location)
-
-    const url = `https://www.themuse.com/api/public/jobs?api_key=${MUSE_API_KEY}&${params}`
-
-    console.log('Requesting Muse API:', url)
-
-    const response = await fetch(url)
-    const data = await response.json()
-
-    if (!response.ok) {
-      console.error('Muse API Error:', data)
-      throw new Error(data.error || 'Failed to fetch jobs')
-    }
-
-    res.json({
-      jobs: data.results || [],
-      page: data.page || 1,
-      pageCount: data.page_count || 0,
-    })
-  } catch (error) {
-    console.error('Error fetching jobs:', error)
-    res.status(500).json({error: error.message || 'Failed to fetch jobs'})
-  }
-})
-
-// New endpoint to fetch available locations
-app.get('/api/muse-locations', async (req, res) => {
-  try {
-    // Make a sample job request to get available locations
-    const response = await fetch(`https://www.themuse.com/api/public/jobs?api_key=${process.env.MUSE_API_KEY}&page=1`)
-    const data = await response.json()
-
-    // Extract unique locations from the results
-    const locations = [...new Set(data.results.flatMap((job) => job.locations).map((loc) => loc.name))].sort()
-
-    res.json({locations})
-  } catch (error) {
-    console.error('Error fetching locations:', error)
-    res.status(500).json({error: 'Failed to fetch locations'})
   }
 })
 

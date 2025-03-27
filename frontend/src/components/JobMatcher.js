@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import '../styles/JobMatcher.css'
-import {API_URL} from '../utils/api'
+const MUSE_API_KEY = process.env.REACT_APP_MUSE_API_KEY
+
 const MUSE_CATEGORIES = {
   Accounting: 'Accounting',
   'Accounting and Finance': 'Accounting and Finance',
@@ -97,32 +98,41 @@ const JobMatcher = ({userProfile}) => {
       setError('')
 
       try {
-        const params = new URLSearchParams({
-          page: page.toString(),
-        })
+        // Use The Muse API directly instead of your backend
+        const apiUrl = 'https://www.themuse.com/api/public/jobs'
 
-        if (selectedCategory) params.append('category', selectedCategory)
-        if (selectedLocation) params.append('location', selectedLocation)
+        // Log the URL being used
+        console.log('Fetching from:', `${apiUrl}?api_key=${MUSE_API_KEY}&page=1`)
 
-        const response = await fetch(`/api/muse-jobs?${params}`)
+        const response = await fetch(
+          `${apiUrl}?api_key=${MUSE_API_KEY}&page=1&keywords=${encodeURIComponent(
+            selectedCategory,
+          )}&location=${encodeURIComponent(selectedLocation)}`,
+        )
+
+        // Check if response is HTML instead of JSON
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Received HTML instead of JSON. API URL may be incorrect.')
+        }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch jobs')
+          throw new Error(`Server responded with status: ${response.status}`)
         }
 
         const data = await response.json()
-        setJobs(data.jobs)
+        setJobs(data.results || [])
         setPageCount(data.pageCount)
-      } catch (err) {
-        console.error('Error:', err)
-        setError('Failed to fetch job listings. Please try again.')
+      } catch (error) {
+        console.error('Error fetching jobs:', error)
+        setError(`Failed to fetch jobs: ${error.message}`)
       } finally {
         setLoading(false)
       }
     }
 
     fetchJobs()
-  }, [page, selectedCategory, selectedLocation])
+  }, [selectedCategory, selectedLocation])
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pageCount) {
